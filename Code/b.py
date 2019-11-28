@@ -1,6 +1,6 @@
 import cv2 as cv
 import time
-
+import head as h
 # 检测人脸并绘制人脸bounding box
 def getFaceBox(net, frame, conf_threshold=0.7):
     frameOpencvDnn = frame.copy()
@@ -34,6 +34,7 @@ ageModel = "/home/pi/IAD/models/age_net.caffemodel"
 genderProto = "/home/pi/IAD/models/gender_deploy.prototxt"
 genderModel = "/home/pi/IAD/models/gender_net.caffemodel"
 
+src = cv.imread("/home/pi/IAD/AD/SSpicture/1.jpg") #屏幕保护，即没人脸时显示
 # 模型均值
 MODEL_MEAN_VALUES = (78.4263377603, 87.7689143744, 114.895847746)
 ageList = ['(0-2)', '(4-6)', '(8-12)', '(15-20)', '(25-32)', '(38-43)', '(48-53)', '(60-100)']
@@ -47,7 +48,6 @@ faceNet = cv.dnn.readNet(faceModel, faceProto)
 
 # 打开一个视频文件或一张图片或一个摄像头
 cap = cv.VideoCapture(0)
-cv.namedWindow("AGD",cv.WINDOW_AUTOSIZE)
 padding = 20
 n = 0
 while cv.waitKey(1) < 0:
@@ -64,6 +64,7 @@ while cv.waitKey(1) < 0:
         frameFace, bboxes = getFaceBox(faceNet, frame)
         if not bboxes:
             print("No face Detected, Checking next frame")
+            cv.imshow("advertising",src)
             continue
         for bbox in bboxes:
             face = frame[max(0, bbox[1] - padding):min(bbox[3] + padding, frame.shape[0] - 1),
@@ -78,7 +79,5 @@ while cv.waitKey(1) < 0:
             age = ageList[agePreds[0].argmax()]
             label = "{},{}".format(gender, age)
             print(label)
-            cv.putText(frameFace, label, (bbox[0], bbox[1] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2,
-                       cv.LINE_AA)  # putText(img, text, org, fontFace, fontScale, color[, thickness[, lineType[, bottomLeftOrigin]]]) -> img
-            #cv.imshow("AGD", frameFace)
+            h.advertisements("Female","(48-53)",10)
         print("time : {:.3f} ms".format(time.time() - t)) #输出时间
